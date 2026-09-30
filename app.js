@@ -7,9 +7,13 @@ const IMAGE_BYTES = WIDTH * HEIGHT * BYTES_PER_PIXEL;
 const INPUT_POINTER = 0;
 const OUTPUT_POINTER = IMAGE_BYTES;
 
+const WASM_BASE64 =
+  "AGFzbQEAAAABCAFgBH9/f38AAwIBAAUDAQBxBxMCBm1lbW9yeQIABmRpbGF0ZQAACt8BAdwBAQV/QQAhBQJAA0AgBSADTw0BQQAhBAJAA0AgBCACTw0BIAUgAmwgBGpBAnQhBiAAIAZqIQcgBy0AAEUhCCAIRSAEQQBLcQRAIAdBBGstAABFIQgLIAhFIARBAWogAklxBEAgB0EEai0AAEUhCAsgCEUgBUEAS3EEQCAHIAJBAnRrLQAARSEICyAIRSAFQQFqIANJcQRAIAcgAkECdGotAABFIQgLIAgEQCABIAZqQYCAgHg2AgAFIAEgBmogBygCADYCAAsgBEEBaiEEDAALCyAFQQFqIQUMAAsLCw==";
+
 const fileInput = document.querySelector("#image-file");
 const fileName = document.querySelector("#file-name");
 const loadWasmButton = document.querySelector("#load-wasm-button");
+const wasmModeInputs = document.querySelectorAll('input[name="wasm-mode"]');
 const compareButton = document.querySelector("#compare-button");
 const status = document.querySelector("#status");
 const summary = document.querySelector("#summary");
@@ -25,7 +29,7 @@ let wasm = null;
 
 function setStatus(message, isError = false) {
   status.textContent = message;
-  status.classList.toggle("error", isError);
+  status.dataset.error = String(isError);
 }
 
 function resetResults() {
@@ -169,6 +173,38 @@ function describeComparison(javaScriptMilliseconds, wasmMilliseconds) {
   return `${fastestName} ha sido ${ratio.toFixed(2)}× más rápido.`;
 }
 
+wasmModeInputs.forEach((input) => {
+  input.addEventListener("change", async () => {
+    if (!input.checked) {
+      return;
+    }
+
+    if (input.value === "during-comparison") {
+      wasm = null;
+      loadWasmButton.disabled = false;
+      loadWasmButton.textContent = "Cargar WebAssembly";
+      setStatus("WebAssembly se cargara durante la comparacion.");
+      return;
+    }
+
+    loadWasmButton.disabled = true;
+    setStatus("Cargando WebAssembly antes de comparar...");
+    try {
+      await loadWebAssembly();
+      if (!input.checked) {
+        wasm = null;
+        return;
+      }
+      loadWasmButton.textContent = "WebAssembly cargado";
+      setStatus("WebAssembly esta cargado y no se incluira en la medicion.");
+    } catch (error) {
+      loadWasmButton.disabled = false;
+      loadWasmButton.textContent = "Cargar WebAssembly";
+      setStatus(error instanceof Error ? error.message : "No se pudo cargar WebAssembly.", true);
+    }
+  });
+});
+
 fileInput.addEventListener("change", async () => {
   compareButton.disabled = true;
   selectedFile = null;
@@ -202,12 +238,9 @@ async function loadWebAssembly() {
     return wasm;
   }
 
-  const response = await fetch("image.wasm");
-  if (!response.ok) {
-    throw new Error(`No se ha podido cargar image.wasm (${response.status}).`);
-  }
-
-  const result = await WebAssembly.instantiateStreaming(response);
+  const binary = atob(WASM_BASE64);
+  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+  const result = await WebAssembly.instantiate(bytes);
   wasm = result.instance;
   return wasm;
 }
@@ -240,6 +273,11 @@ compareButton.addEventListener("click", async () => {
     return;
   }
 
+  const wasmMode = document.querySelector('input[name="wasm-mode"]:checked').value;
+  if (wasmMode === "during-comparison") {
+    // Cada comparacion debe incluir una nueva inicializacion del modulo.
+    wasm = null;
+  }
   const wasmWasPreloaded = Boolean(wasm);
   compareButton.disabled = true;
   loadWasmButton.disabled = true;
