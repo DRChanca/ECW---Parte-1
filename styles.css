@@ -3,38 +3,38 @@
 }
 
 body {
-  max-width: 1100px;
-  margin: 32px auto;
-  padding: 0 16px;
+  max-width: 68.75rem;
+  margin: 2rem auto;
+  padding: 0 1rem;
   color: #1f2933;
   font-family: system-ui, sans-serif;
 }
 
 section {
-  margin: 24px 0;
-  padding: 20px;
-  border: 1px solid #cbd5d9;
-  border-radius: 8px;
+  margin: 1.5rem 0;
+  padding: 1.25rem;
+  border: 0.0625rem solid #cbd5d9;
+  border-radius: 0.5rem;
 }
 
 fieldset {
-  margin: 16px 0;
+  margin: 1rem 0;
   border: 0;
   padding: 0;
 }
 
 fieldset label {
   display: block;
-  margin: 8px 0;
+  margin: 0.5rem 0;
 }
 
 button,
-label[for="image-file"] {
+label:has(input[type="file"]) {
   display: inline-block;
-  margin-right: 8px;
-  padding: 8px 12px;
-  border: 1px solid #18714f;
-  border-radius: 4px;
+  margin-right: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border: 0.0625rem solid #18714f;
+  border-radius: 0.25rem;
   background: white;
   color: #18714f;
   font: inherit;
@@ -53,19 +53,17 @@ button:disabled {
 
 input[type="file"] {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  width: 0.0625rem;
+  height: 0.0625rem;
   overflow: hidden;
   clip-path: inset(50%);
 }
 
-#file-name,
-#status,
-#summary {
+output {
   color: #526059;
 }
 
-#status[data-error="true"] {
+section:first-of-type > output[data-error="true"] {
   color: #a22d20;
   font-weight: bold;
 }
@@ -73,22 +71,22 @@ input[type="file"] {
 article {
   display: inline-block;
   width: 32%;
-  margin: 12px 1% 0 0;
+  margin: 0.75rem 1% 0 0;
   vertical-align: top;
 }
 
 article h3 {
-  margin: 0 0 8px;
+  margin: 0 0 0.5rem;
 }
 
 canvas {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid #cbd5d9;
+  border: 0.0625rem solid #cbd5d9;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 43.75em) {
   article {
     display: block;
     width: 100%;

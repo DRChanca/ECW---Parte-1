@@ -1,0 +1,9 @@
+La aplicación desarrollada consta de un convertidor de imagenes blanco y negro, 
+
+En el que por cada punto negro detectado, rellena de color negro sus vecinos. 
+
+Donde cada vecino es el punto de arriba, abajo, derecha y izquierda. 
+
+Para existen unas imagenes ya generadas dentro de la carpeta generated/, cada imagen tiene que ser de 1280x720.
+
+la aplicación compara la computación de ese cálculo entre javascript y webassembly.

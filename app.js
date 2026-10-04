@@ -10,19 +10,13 @@ const OUTPUT_POINTER = IMAGE_BYTES;
 const WASM_BASE64 =
   "AGFzbQEAAAABCAFgBH9/f38AAwIBAAUDAQBxBxMCBm1lbW9yeQIABmRpbGF0ZQAACt8BAdwBAQV/QQAhBQJAA0AgBSADTw0BQQAhBAJAA0AgBCACTw0BIAUgAmwgBGpBAnQhBiAAIAZqIQcgBy0AAEUhCCAIRSAEQQBLcQRAIAdBBGstAABFIQgLIAhFIARBAWogAklxBEAgB0EEai0AAEUhCAsgCEUgBUEAS3EEQCAHIAJBAnRrLQAARSEICyAIRSAFQQFqIANJcQRAIAcgAkECdGotAABFIQgLIAgEQCABIAZqQYCAgHg2AgAFIAEgBmogBygCADYCAAsgBEEBaiEEDAALCyAFQQFqIQUMAAsLCw==";
 
-const fileInput = document.querySelector("#image-file");
-const fileName = document.querySelector("#file-name");
-const loadWasmButton = document.querySelector("#load-wasm-button");
-const wasmModeInputs = document.querySelectorAll('input[name="wasm-mode"]');
-const compareButton = document.querySelector("#compare-button");
-const status = document.querySelector("#status");
-const summary = document.querySelector("#summary");
-const jsTime = document.querySelector("#js-time");
-const wasmTime = document.querySelector("#wasm-time");
-
-const originalCanvas = document.querySelector("#original-canvas");
-const jsCanvas = document.querySelector("#js-canvas");
-const wasmCanvas = document.querySelector("#wasm-canvas");
+const [controlsSection, resultsSection] = document.querySelectorAll("main > section");
+const fileInput = controlsSection.querySelector('input[type="file"]');
+const wasmModeInput = controlsSection.querySelector("select");
+const [fileName, status] = controlsSection.querySelectorAll("output");
+const [loadWasmButton, compareButton] = controlsSection.querySelectorAll('button[type="button"]');
+const [summary, jsTime, wasmTime] = resultsSection.querySelectorAll("output");
+const [originalCanvas, jsCanvas, wasmCanvas] = resultsSection.querySelectorAll("canvas");
 
 let selectedFile = null;
 let wasm = null;
@@ -173,36 +167,30 @@ function describeComparison(javaScriptMilliseconds, wasmMilliseconds) {
   return `${fastestName} ha sido ${ratio.toFixed(2)}× más rápido.`;
 }
 
-wasmModeInputs.forEach((input) => {
-  input.addEventListener("change", async () => {
-    if (!input.checked) {
-      return;
-    }
+wasmModeInput.addEventListener("change", async () => {
+  if (wasmModeInput.value === "during-comparison") {
+    wasm = null;
+    loadWasmButton.disabled = false;
+    loadWasmButton.textContent = "Cargar WebAssembly";
+    setStatus("WebAssembly se cargara durante la comparacion.");
+    return;
+  }
 
-    if (input.value === "during-comparison") {
+  loadWasmButton.disabled = true;
+  setStatus("Cargando WebAssembly antes de comparar...");
+  try {
+    await loadWebAssembly();
+    if (wasmModeInput.value !== "preloaded") {
       wasm = null;
-      loadWasmButton.disabled = false;
-      loadWasmButton.textContent = "Cargar WebAssembly";
-      setStatus("WebAssembly se cargara durante la comparacion.");
       return;
     }
-
-    loadWasmButton.disabled = true;
-    setStatus("Cargando WebAssembly antes de comparar...");
-    try {
-      await loadWebAssembly();
-      if (!input.checked) {
-        wasm = null;
-        return;
-      }
-      loadWasmButton.textContent = "WebAssembly cargado";
-      setStatus("WebAssembly esta cargado y no se incluira en la medicion.");
-    } catch (error) {
-      loadWasmButton.disabled = false;
-      loadWasmButton.textContent = "Cargar WebAssembly";
-      setStatus(error instanceof Error ? error.message : "No se pudo cargar WebAssembly.", true);
-    }
-  });
+    loadWasmButton.textContent = "WebAssembly cargado";
+    setStatus("WebAssembly esta cargado y no se incluira en la medicion.");
+  } catch (error) {
+    loadWasmButton.disabled = false;
+    loadWasmButton.textContent = "Cargar WebAssembly";
+    setStatus(error instanceof Error ? error.message : "No se pudo cargar WebAssembly.", true);
+  }
 });
 
 fileInput.addEventListener("change", async () => {
@@ -273,8 +261,7 @@ compareButton.addEventListener("click", async () => {
     return;
   }
 
-  const wasmMode = document.querySelector('input[name="wasm-mode"]:checked').value;
-  if (wasmMode === "during-comparison") {
+  if (wasmModeInput.value === "during-comparison") {
     // Cada comparacion debe incluir una nueva inicializacion del modulo.
     wasm = null;
   }
