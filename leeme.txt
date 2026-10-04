@@ -1,9 +1,48 @@
-La aplicación desarrollada consta de un convertidor de imagenes blanco y negro, 
+Comparador de JavaScript y WebAssembly
 
-En el que por cada punto negro detectado, rellena de color negro sus vecinos. 
+Esta aplicación permite comprobar, de una forma visual y sencilla, cómo se comportan JavaScript y WebAssembly al realizar el mismo trabajo.
 
-Donde cada vecino es el punto de arriba, abajo, derecha y izquierda. 
+Estructura del proyecto
 
-Para existen unas imagenes ya generadas dentro de la carpeta generated/, cada imagen tiene que ser de 1280x720.
+- index.html: estructura de la página y controles de la interfaz.
+- app.js: validación de imágenes, ejecución del algoritmo en JavaScript, carga y ejecución de WebAssembly, medición de tiempos y actualización de los resultados.
+- image.wat: código fuente del algoritmo de dilatación escrito en el formato textual de WebAssembly.
+- generated/: imágenes PNG de 1280 × 720 con distintos porcentajes de píxeles negros (0 %, 10 %, 50 %, 90 % y 100 %).
 
-la aplicación compara la computación de ese cálculo entre javascript y webassembly.
+
+Características principales
+
+- Admite imágenes PNG o JPEG de 1280 × 720 píxeles.
+- Comprueba que la imagen solo tenga píxeles negros o blancos totalmente opacos, para que la comparación sea válida.
+- Muestra la imagen original y los resultados obtenidos con JavaScript y con WebAssembly en dos lienzos independientes.
+- Mide el tiempo de cada ejecución e indica cuál ha sido más rápida en esa prueba.
+- Permite elegir si la carga de WebAssembly se incluye en la medición o si se realiza antes, lo que ayuda a distinguir el coste de inicialización del coste real del cálculo.
+- Incluye imágenes de ejemplo en la carpeta generated/.
+
+Ventajas de WebAssembly respecto a JavaScript
+
+WebAssembly está pensado para ejecutar en el navegador código de bajo nivel de manera eficiente. 
+
+En tareas intensivas y repetitivas, como recorrer los más de 900 000 píxeles de una imagen, 
+
+ofrece un rendimiento muy positivo. 
+
+En esta aplicación, WebAssembly resulta especialmente útil para aislar la parte más costosa del procesamiento de imagen: el recorrido y cálculo de cada píxel.
+
+
+Software, herramientas y versiones utilizadas
+
+- WebAssembly Binary Toolkit: wat2wasm v1.0.39, para compilar image.wat a image.wasm.
+- HTML5, CSS3 y JavaScript estándar, sin dependencias externas ni frameworks.
+
+
+Consideraciones específicas del trabajo
+
+La comparación usa exactamente la misma imagen y el mismo criterio de dilatación en las dos implementaciones. 
+
+
+El tiempo mostrado no representa únicamente el bucle de cálculo.
+Incluye la decodificación de la imagen y el dibujo del resultado en el lienzo; en el caso de WebAssembly, 
+también puede incluir la carga e inicialización del módulo, según el modo seleccionado. 
+Esta decisión hace visible un aspecto importante: WebAssembly puede ser ventajoso en cálculos repetitivos de cierto tamaño, pero su coste de arranque puede no compensar en tareas pequeñas.
+
